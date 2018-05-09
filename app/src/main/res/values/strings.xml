@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">DialView</string>
+    <string name="air_quality_excellent">优</string>
+    <string name="air_quality_medium">中</string>
+    <string name="air_quality_bad">差</string>
+    <string name="air_quality_inside_the_car">车内空气质量</string>
+    <string name="air_quality_filter_element_left">剩余滤芯</string>
+
 </resources>

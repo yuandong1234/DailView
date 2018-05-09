@@ -48,7 +48,7 @@ public class DialView extends View {
     private float centerX, centerY;
 
     // 刻度经过角度范围
-    private float targetAngle = 90;
+    private float targetAngle = 0;
 
     // 圆弧的经过总范围角度角度
     private float sweepAngle = 180;
@@ -56,33 +56,41 @@ public class DialView extends View {
     //刻度线画笔
     private Paint linePaint;
 
+    //直线颜色
+    private int lineColor = Color.parseColor("#EEEFF2");
+
     //圆弧画笔
     private Paint textPaint;
 
-    //文字画笔
+    //文本画笔
     private Paint arcPaint;
 
-    //起始颜色
-    private int startColor = Color.parseColor("#ED1C24");
-
-    //结束颜色
-    private int endColor = Color.parseColor("#22B14C");
+    //文本颜色
+    private int textColor = Color.parseColor("#4C4C4C");
 
     //颜色(优)
-    private int COLOR_EXCELLENT = Color.parseColor("#50C647");
-    private int COLOR_MEDIUM = Color.parseColor("#E0CE49");
-    private int COLOR_BAD = Color.parseColor("#FF654C");
+    public static int COLOR_EXCELLENT = Color.parseColor("#50C647");
 
-    private int CURRENT_COLOR=COLOR_EXCELLENT;
+    //颜色(中)
+    public static int COLOR_MEDIUM = Color.parseColor("#E0CE49");
+
+    //颜色(差)
+    public static int COLOR_BAD = Color.parseColor("#FF654C");
+
+    //当前的颜色
+    private int COLOR = COLOR_EXCELLENT;
 
     //颜色渐变
     private ArgbEvaluator argbEvaluator;
 
     //文字描述
-    private String desc = "优";
+    private String desc;
 
     //图片
     private Bitmap img;
+
+    //剩余滤芯值
+    private float value;
 
     public DialView(Context context) {
         this(context, null);
@@ -111,7 +119,7 @@ public class DialView extends View {
         arcPaint.setStrokeWidth(10);
         // 设置抗锯齿
         arcPaint.setAntiAlias(true);
-        arcPaint.setColor(Color.parseColor("#EEEFF2"));
+        arcPaint.setColor(lineColor);
         arcPaint.setStyle(Paint.Style.STROKE);
         //arcPaint.setStrokeCap(Paint.Cap.ROUND);
 
@@ -123,6 +131,8 @@ public class DialView extends View {
         padding = DensityUtil.dp2px(context, 10);
         interval = DensityUtil.dp2px(context, 5);
 
+        //默认"优"
+        desc = getResources().getString(R.string.air_quality_excellent);
         img = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_air_quality_excellent);
     }
 
@@ -134,13 +144,11 @@ public class DialView extends View {
         radius = width * 2.0f / 3 / 2;
         centerX = width * 1f / 2;
         centerY = radius + padding;
-        int tempheight = (int) (2 * radius + 2 * padding);
+        int tempHeight = (int) (2 * radius + 2 * padding);
         if (height == 0) {
-            setMeasuredDimension(width, tempheight);
-            Log.e(TAG, "默认view的高度 ： " + tempheight);
+            setMeasuredDimension(width, tempHeight);
         } else {
             setMeasuredDimension(width, height);
-            Log.e(TAG, "重新设置view的高度 ： " + height);
         }
     }
 
@@ -159,7 +167,6 @@ public class DialView extends View {
      * @param canvas
      */
     private void drawLine(final Canvas canvas) {
-
         // 保存之前的画布状态
         canvas.save();
         // 移动画布，实际上是改变坐标系的位置
@@ -173,14 +180,13 @@ public class DialView extends View {
         for (int i = 0; i < 31; i++) {
             if (c <= targetAngle && targetAngle != 0) {// 如果累计画过的角度，小于当前有效刻度
                 float offset = (i + 1) * a * 1f / sweepAngle;
-                //TODO
-                int color = (int) (argbEvaluator.evaluate(offset, CURRENT_COLOR, CURRENT_COLOR));
+                int color = (int) (argbEvaluator.evaluate(offset, COLOR, COLOR));
                 linePaint.setColor(color);
                 canvas.drawLine(0, radius - interval, 0, radius - len, linePaint);
                 // 画过的角度进行叠加
                 c += a;
             } else {
-                linePaint.setColor(Color.parseColor("#EEEFF2"));
+                linePaint.setColor(lineColor);
                 canvas.drawLine(0, radius - interval, 0, radius - len, linePaint);
             }
             canvas.rotate(a);
@@ -228,23 +234,24 @@ public class DialView extends View {
         //文字
         textPaint.setTextAlign(Paint.Align.LEFT);
         textPaint.setTextSize(DensityUtil.sp2px(getContext(), 50));
-        textPaint.setColor(CURRENT_COLOR);
+        textPaint.setColor(COLOR);
         Rect bounds = new Rect();
-        textPaint.getTextBounds(desc, 0, desc.length(), bounds);
+        String reference = getResources().getString(R.string.air_quality_excellent);
+        textPaint.getTextBounds(reference, 0, reference.length(), bounds);
         canvas.drawText(desc, centerX - bounds.width() * 7f / 8, centerY + bounds.height() / 4, textPaint);
 
         textPaint.setTextAlign(Paint.Align.CENTER);
         textPaint.setTextSize(DensityUtil.sp2px(getContext(), 16));
-        textPaint.setColor(Color.parseColor("#4C4C4C"));
-        canvas.drawText("车内空气质量", centerX, centerY - bounds.height() * 3f / 4 - padding, textPaint);
+        textPaint.setColor(textColor);
+        canvas.drawText(getResources().getString(R.string.air_quality_inside_the_car), centerX, centerY - bounds.height() * 3f / 4 - padding, textPaint);
 
         //图片
         Bitmap bitmap = zoomImage(img, 0, bounds.height() * 5 / 6);
         // canvas.drawBitmap(bitmap, centerX + bounds.width() / 2, centerY - bounds.height() * 2f / 3, bitmapPaint);
-        canvas.drawBitmap(bitmap, centerX + padding, centerY - bounds.height() * 1f / 2, textPaint);
+        canvas.drawBitmap(bitmap, centerX + padding * 1.5f, centerY - bounds.height() * 1f / 2, textPaint);
 
         //横线
-        linePaint.setColor(Color.parseColor("#EEEFF2"));
+        linePaint.setColor(lineColor);
         linePaint.setStrokeWidth(DensityUtil.dp2px(getContext(), 1));
 
         float startX = centerX + interval + len - radius + strokeWidth + 1.5f * padding;
@@ -263,22 +270,24 @@ public class DialView extends View {
         float bottom = startY + 2.5f * padding + bounds2.height();
         RectF rectF = new RectF(left, top, right, bottom);
         linePaint.setStyle(Paint.Style.FILL);
-        linePaint.setColor(CURRENT_COLOR);
+        linePaint.setColor(COLOR);
         canvas.drawRoundRect(rectF, 50, 50, linePaint);
 
         //画文字
         textPaint.setTextSize(DensityUtil.sp2px(getContext(), 16));
         textPaint.setColor(Color.WHITE);
-        canvas.drawText("80%", centerX, startY + 1.75f * padding + bounds2.height(), textPaint);
+        String text = value == 0 ? String.valueOf(0) : (value + "%");
+        canvas.drawText(text, centerX, startY + 1.75f * padding + bounds2.height(), textPaint);
 
         textPaint.setTextSize(DensityUtil.sp2px(getContext(), 16));
-        textPaint.setColor(Color.parseColor("#4C4C4C"));
-        canvas.drawText("剩余滤芯", centerX, bottom + padding + bounds2.height(), textPaint);
+        textPaint.setColor(textColor);
+        canvas.drawText(getResources().getString(R.string.air_quality_filter_element_left), centerX, bottom + padding + bounds2.height(), textPaint);
 
         //重新设置view的高度
-        height = (int) (bottom + 2 * padding + bounds2.height());
-        requestLayout();
-        Log.e(TAG, "重新设置view的高度");
+        if (height == 0) {
+            height = (int) (bottom + 2 * padding + bounds2.height());
+            requestLayout();
+        }
     }
 
     /**
@@ -307,5 +316,26 @@ public class DialView extends View {
         // 缩放图片动作
         matrix.postScale(scaleWidth, scaleHeight);
         return Bitmap.createBitmap(src, 0, 0, (int) width, (int) height, matrix, true);
+    }
+
+
+    /**
+     * @param desc  空气质量描述（ 优、中、差）
+     * @param value 滤芯值
+     * @param color 颜色
+     */
+    public void setState(String desc, float value, int color) {
+        this.COLOR = color;
+        this.desc = desc;
+        this.value = value;
+        this.targetAngle = value * sweepAngle / 100;
+        if (color == COLOR_EXCELLENT) {
+            img = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_air_quality_excellent);
+        } else if (color == COLOR_MEDIUM) {
+            img = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_air_quality_medium);
+        } else {
+            img = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_air_quality_bad);
+        }
+        invalidate();
     }
 }

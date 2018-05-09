@@ -3,8 +3,10 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/DailView.iml" filepath="$PROJECT_DIR$/DailView.iml" />
+      <module fileurl="file://D:\android\github\DailView\DailView.iml" filepath="D:\android\github\DailView\DailView.iml" />
       <module fileurl="file://D:\yuandong\git\DailView\DialView.iml" filepath="D:\yuandong\git\DailView\DialView.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://D:\android\github\DailView\app\app.iml" filepath="D:\android\github\DailView\app\app.iml" />
       <module fileurl="file://D:\yuandong\git\DailView\app\app.iml" filepath="D:\yuandong\git\DailView\app\app.iml" />
     </modules>
   </component>
