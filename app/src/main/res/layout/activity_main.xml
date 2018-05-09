@@ -5,8 +5,18 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.yuong.view.MainActivity">
+
     <com.yuong.view.DialView
+        android:id="@+id/dial_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/dial_view"
+        android:gravity="center"
+        android:textSize="26sp"
+        android:text="完美"/>
 
 </RelativeLayout>
